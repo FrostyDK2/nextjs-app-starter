@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Empire: RichMan Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-title h1 {
+            color: white;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .game-title p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+        }
+
+        .money-display {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .money-display h2 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .money-display .income {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #667eea;
+            font-size: 1.3em;
+        }
+
+        .business-item, .product-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .business-item:hover, .product-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .business-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .business-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .business-level {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .business-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .product-price {
+            font-weight: bold;
+            color: #4CAF50;
+            font-size: 1.1em;
+        }
+
+        .product-stock {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1em;
+        }
+
+        .log-section {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .log-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-left: 3px solid #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            font-size: 0.9em;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .loading-screen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+                min-height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Carregamento -->
+    <div id="loadingScreen" class="loading-screen">
+        <h1>🏢 Business Empire</h1>
+        <p style="font-size: 1.2em; margin-bottom: 30px;">Carregando seu império...</p>
+        <div class="loading-bar">
+            <div id="loadingProgress" class="loading-progress"></div>
+        </div>
+    </div>
+
+    <!-- Jogo Principal -->
+    <div id="gameContainer" class="container" style="display: none;">
+        <!-- Painel Lateral -->
+        <div class="sidebar">
+            <!-- Display de Dinheiro -->
+            <div class="money-display">
+                <h2 id="moneyDisplay">R$ 10.000</h2>
+                <div class="income" id="incomeDisplay">Renda: R$ 0/s</div>
+            </div>
+
+            <!-- Seção de Empresas -->
+            <div class="section">
+                <h3>🏢 Empresas</h3>
+                <div id="businessList"></div>
+            </div>
+
+            <!-- Seção de Produtos -->
+            <div class="section">
+                <h3>📦 Produtos</h3>
+                <div id="productList"></div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="saveGame()">💾 Salvar</button>
+                <button class="btn btn-info" onclick="sendDiscordReport()">📢 Discord</button>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <div class="game-title">
+                <h1>🏢 Business Empire</h1>
+                <p>Construa seu império empresarial!</p>
+            </div>
+
+            <!-- Log de Atividades -->
+            <div class="log-section">
+                <h3>📋 Atividades Recentes</h3>
+                <div id="activityLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do Webhook do Discord
+        const webhookUrl = "SEU_WEBHOOK_AQUI"; // Substitua pela sua URL do webhook
+
+        // Estado do Jogo
+        let gameState = {
+            money: 10000,
+            businesses: {},
+            products: {},
+            totalIncome: 0,
+            activityLog: []
+        };
+
+        // Definições de Empresas
+        const businessTypes = {
+            market: {
+                name: "🏪 Supermercado",
+                baseCost: 5000,
+                baseIncome: 50,
+                productType: "food",
+                description: "Gera alimentos para venda"
+            },
+            bank: {
+                name: "🏦 Banco",
+                baseCost: 15000,
+                baseIncome: 120,
+                productType: "money",
+                description: "Gera juros e investimentos"
+            },
+            factory: {
+                name: "🏭 Fábrica",
+                baseCost: 25000,
+                baseIncome: 200,
+                productType: "electronics",
+                description: "Produz eletrônicos"
+            },
+            transport: {
+                name: "🚛 Transportadora",
+                baseCost: 12000,
+                baseIncome: 80,
+                productType: "service",
+                description: "Serviços de transporte"
+            },
+            realestate: {
+                name: "🏠 Imobiliária",
+                baseCost: 30000,
+                baseIncome: 250,
+                productType: "property",
+                description: "Compra e venda de imóveis"
+            }
+        };
+
+        // Definições de Produtos
+        const productTypes = {
+            food: { name: "🍎 Alimentos", minPrice: 30, maxPrice: 60 },
+            money: { name: "💰 Investimentos", minPrice: 100, maxPrice: 200 },
+            electronics: { name: "📱 Eletrônicos", minPrice: 150, maxPrice: 300 },
+            service: { name: "🚚 Serviços", minPrice: 80, maxPrice: 150 },
+            property: { name: "🏡 Imóveis", minPrice: 500, maxPrice: 1000 }
+        };
+
+        // Inicialização do Jogo
+        function initGame() {
+            showLoadingScreen();
+            
+            setTimeout(() => {
+                loadGame();
+                updateUI();
+                startGameLoop();
+                hideLoadingScreen();
+                addLog("🎮 Jogo iniciado! Bem-vindo ao Business Empire!");
+            }, 2000);
+        }
+
+        // Tela de Carregamento
+        function showLoadingScreen() {
+            const progress = document.getElementById('loadingProgress');
+            let width = 0;
+            const interval = setInterval(() => {
+                width += Math.random() * 30;
+                if (width >= 100) {
+                    width = 100;
+                    clearInterval(interval);
+                }
+                progress.style.width = width + '%';
+            }, 200);
+        }
+
+        function hideLoadingScreen() {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+        }
+
+        // Sistema de Salvamento
+        function saveGame() {
+            localStorage.setItem('businessEmpireGame', JSON.stringify(gameState));
+            addLog("💾 Jogo salvo com sucesso!");
+            playSound('save');
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('businessEmpireGame');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                addLog("📂 Progresso carregado!");
+            } else {
+                // Inicializar produtos com preços aleatórios
+                for (let type in productTypes) {
+                    gameState.products[type] = {
+                        stock: 0,
+                        price: getRandomPrice(type)
+                    };
+                }
+            }
+        }
+
+        // Comprar Empresa
+        function buyBusiness(type) {
+            const business = businessTypes[type];
+            const level = gameState.businesses[type] ? gameState.businesses[type].level : 0;
+            const cost = business.baseCost * Math.pow(1.5, level);
+
+            if (gameState.money >= cost) {
+                gameState.money -= cost;
+                
+                if (!gameState.businesses[type]) {
+                    gameState.businesses[type] = { level: 1, income: business.baseIncome };
+                    addLog(`🏢 Nova empresa adquirida: ${business.name}!`);
+                    sendDiscordNotification(`Nova empresa adquirida: ${business.name}`, "success");
+                } else {
+                    gameState.businesses[type].level++;
+                    gameState.businesses[type].income = business.baseIncome * gameState.businesses[type].level;
+                    addLog(`⬆️ ${business.name} foi melhorada para nível ${gameState.businesses[type].level}!`);
+                }
+                
+                calculateTotalIncome();
+                updateUI();
+                playSound('buy');
+            } else {
+                addLog("❌ Dinheiro insuficiente!");
+                playSound('error');
+            }
+        }
+
+        // Vender Produto
+        function sellProduct(type) {
+            if (gameState.products[type].stock > 0) {
+                const price = gameState.products[type].price;
+                gameState.money += price;
+                gameState.products[type].stock--;
+                
+                addLog(`💰 Vendeu ${productTypes[type].name} por R$ ${price}!`);
+                updateUI();
+                playSound('sell');
+                
+                // Notificar Discord para vendas grandes
+                if (price > 200) {
+                    sendDiscordNotification(`Venda importante: ${productTypes[type].name} por R$ ${price}`, "info");
+                }
+            } else {
+                addLog("❌ Produto em falta!");
+                playSound('error');
+            }
+        }
+
+        // Calcular Renda Total
+        function calculateTotalIncome() {
+            gameState.totalIncome = 0;
+            for (let type in gameState.businesses) {
+                gameState.totalIncome += gameState.businesses[type].income;
+            }
+        }
+
+        // Obter Preço Aleatório
+        function getRandomPrice(type) {
+            const product = productTypes[type];
+            return Math.floor(Math.random() * (product.maxPrice - product.minPrice + 1)) + product.minPrice;
+        }
+
+        // Loop Principal do Jogo
+        function startGameLoop() {
+            // Loop de 1 segundo - Renda passiva e produção
+            setInterval(() => {
+                // Gerar renda passiva
+                gameState.money += gameState.totalIncome;
+                
+                // Produzir produtos
+                for (let type in gameState.businesses) {
+                    const business = gameState.businesses[type];
+                    const productType = businessTypes[type].productType;
+                    
+                    // Chance de produzir produto baseada no nível
+                    if (Math.random() < (business.level * 0.1)) {
+                        gameState.products[productType].stock++;
+                    }
+                }
+                
+                updateUI();
+            }, 1000);
+
+            // Loop de 30 segundos - Atualizar preços
+            setInterval(() => {
+                for (let type in gameState.products) {
+                    gameState.products[type].price = getRandomPrice(type);
+                }
+                addLog("📈 Preços de mercado atualizados!");
+                updateUI();
+            }, 30000);
+
+            // Auto-save a cada 10 segundos
+            setInterval(() => {
+                saveGame();
+            }, 10000);
+        }
+
+        // Atualizar Interface
+        function updateUI() {
+            // Atualizar display de dinheiro
+            document.getElementById('moneyDisplay').textContent = `R$ ${gameState.money.toLocaleString()}`;
+            document.getElementById('incomeDisplay').textContent = `Renda: R$ ${gameState.totalIncome}/s`;
+
+            // Atualizar lista de empresas
+            updateBusinessList();
+            
+            // Atualizar lista de produtos
+            updateProductList();
+        }
+
+        function updateBusinessList() {
+            const container = document.getElementById('businessList');
+            container.innerHTML = '';
+
+            for (let type in businessTypes) {
+                const business = businessTypes[type];
+                const owned = gameState.businesses[type];
+                const level = owned ? owned.level : 0;
+                const cost = business.baseCost * Math.pow(1.5, level);
+                const canAfford = gameState.money >= cost;
+
+                const div = document.createElement('div');
+                div.className = 'business-item';
+                div.innerHTML = `
+                    <div class="business-header">
+                        <span class="business-name">${business.name}</span>
+                        ${owned ? `<span class="business-level">Nível ${level}</span>` : ''}
+                    </div>
+                    <div class="business-info">
+                        ${business.description}<br>
+                        ${owned ? `Renda: R$ ${owned.income}/s` : `Renda inicial: R$ ${business.baseIncome}/s`}
+                    </div>
+                    <button class="btn ${canAfford ? '' : 'disabled'}" 
+                            onclick="buyBusiness('${type}')" 
+                            ${canAfford ? '' : 'disabled'}>
+                        ${owned ? '⬆️ Upgrade' : '🛒 Comprar'} - R$ ${cost.toLocaleString()}
+                    </button>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function updateProductList() {
+            const container = document.getElementById('productList');
+            container.innerHTML = '';
+
+            for (let type in gameState.products) {
+                const product = gameState.products[type];
+                const productInfo = productTypes[type];
+
+                const div = document.createElement('div');
+                div.className = 'product-item';
+                div.innerHTML = `
+                    <div class="business-header">
+                        <span class="business-name">${productInfo.name}</span>
+                        <span class="product-price">R$ ${product.price}</span>
+                    </div>
+                    <div class="product-stock">Estoque: ${product.stock} unidades</div>
+                    <button class="btn btn-success ${product.stock > 0 ? '' : 'disabled'}" 
+                            onclick="sellProduct('${type}')"
+                            ${product.stock > 0 ? '' : 'disabled'}>
+                        💰 Vender
+                    </button>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Sistema de Log
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            gameState.activityLog.unshift(`[${timestamp}] ${message}`);
+            
+            // Manter apenas os últimos 10 logs
+            if (gameState.activityLog.length > 10) {
+                gameState.activityLog = gameState.activityLog.slice(0, 10);
+            }
+            
+            updateActivityLog();
+        }
+
+        function updateActivityLog() {
+            const container = document.getElementById('activityLog');
+            container.innerHTML = '';
+            
+            gameState.activityLog.forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'log-item';
+                div.textContent = log;
+                container.appendChild(div);
+            });
+        }
+
+        // Sistema de Som (simulado)
+        function playSound(type) {
+            // Em uma implementação real, você adicionaria arquivos de áudio
+            console.log(`🔊 Som: ${type}`);
+        }
+
+        // Integração com Discord
+        function sendDiscordNotification(message, type = "info") {
+            if (webhookUrl === "SEU_WEBHOOK_AQUI") {
+                console.log("Webhook do Discord não configurado");
+                return;
+            }
+
+            const colors = {
+                success: 3066993,  // Verde
+                info: 3447003,     // Azul
+                warning: 15105570, // Amarelo
+                error: 15158332    // Vermelho
+            };
+
+            const payload = {
+                username: "EmpireBot",
+                embeds: [{
+                    title: "🏢 Business Empire - Nova Ação!",
+                    description: message,
+                    color: colors[type] || colors.info,
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Business Empire Simulator"
+                    }
+                }]
+            };
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            }).catch(error => {
+                console.error('Erro ao enviar para Discord:', error);
+            });
+        }
+
+        function sendDiscordReport() {
+            const report = `
+📊 **Relatório do Império**
+💰 Dinheiro: R$ ${gameState.money.toLocaleString()}
+📈 Renda/s: R$ ${gameState.totalIncome}
+🏢 Empresas: ${Object.keys(gameState.businesses).length}
+📦 Produtos em estoque: ${Object.values(gameState.products).reduce((total, p) => total + p.stock, 0)}
+            `;
+            
+            sendDiscordNotification(report, "info");
+            addLog("📢 Relatório enviado para o Discord!");
+        }
+
+        // Inicializar o jogo quando a página carregar
+        window.onload = initGame;
+
+        // Salvar automaticamente antes de fechar a página
+        window.onbeforeunload = function() {
+            saveGame();
+        };
+    </script>
+</body>
+</html>
